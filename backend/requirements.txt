@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+scikit-learn==1.7.2
+xgboost==3.2.0
+lightgbm==4.7.0
+joblib
+pandas
+numpy
+tldextract
+pydantic

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { width: 280px; font-family: sans-serif; padding: 14px; }
+  #result { margin-top: 12px; padding: 10px; border-radius: 6px; display: none; }
+  .safe { background: #d4edda; color: #155724; }
+  .risky { background: #f8d7da; color: #721c24; }
+  button { padding: 6px 10px; margin-top: 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+  <h3>Phishing Shield</h3>
+  <p id="loading">Checking current page...</p>
+  <div id="result"></div>
+  <button id="reportBtn" style="display:none;">Report this site</button>
+  <p id="status"></p>
+  <script src="popup.js"></script>
+</body>
+</html>
