@@ -1,6 +1,7 @@
 async function checkCurrentTab() {
   const loadingEl = document.getElementById('loading');
   const resultDiv = document.getElementById('result');
+  const reportBtn = document.getElementById('reportBtn');
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (!tab.url || !tab.url.startsWith('http')) {
@@ -21,13 +22,37 @@ async function checkCurrentTab() {
     loadingEl.style.display = 'none';
     resultDiv.style.display = 'block';
     resultDiv.className = data.verdict === 'phishing' ? 'risky' : 'safe';
-    resultDiv.innerHTML = `<b>${data.verdict.toUpperCase()}</b><br>Confidence: ${(data.confidence * 100).toFixed(1)}%`;
 
-    if (data.verdict === 'phishing') {
-      document.getElementById('reportBtn').style.display = 'inline-block';
+    // verdict + confidence (built with textContent, so nothing from the server is run as HTML)
+    resultDiv.textContent = '';
+    const title = document.createElement('b');
+    title.textContent = data.verdict.toUpperCase();
+    resultDiv.appendChild(title);
+    resultDiv.appendChild(document.createElement('br'));
+    resultDiv.appendChild(
+      document.createTextNode(`Confidence: ${(data.confidence * 100).toFixed(1)}%`)
+    );
+
+    // explanation: why the model decided this (top reasons from the backend)
+    if (Array.isArray(data.reasons) && data.reasons.length > 0) {
+      const whyTitle = document.createElement('div');
+      whyTitle.className = 'why-title';
+      whyTitle.textContent = 'Why:';
+      const list = document.createElement('ul');
+      data.reasons.forEach((reason) => {
+        const li = document.createElement('li');
+        li.textContent = reason;
+        list.appendChild(li);
+      });
+      resultDiv.appendChild(whyTitle);
+      resultDiv.appendChild(list);
     }
 
-    document.getElementById('reportBtn').addEventListener('click', async () => {
+    if (data.verdict === 'phishing') {
+      reportBtn.style.display = 'inline-block';
+    }
+
+    reportBtn.addEventListener('click', async () => {
       const domain = new URL(tab.url).hostname;
       await fetch('http://127.0.0.1:8000/report', {
         method: 'POST',

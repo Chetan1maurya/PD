@@ -16,20 +16,36 @@ export default function App() {
     </div>
   );
 }
+type Result = {
+  verdict: 'phishing' | 'legitimate';
+  confidence: number;
+  stage_used: string;
+  reasons?: string[];
+};
+
+const STAGE_LABEL: Record<string, string> = {
+  stage1_fast: 'Stage 1 (fast)',
+  stage2_deep: 'Stage 2 (deep)',
+  allowlist: 'Trusted-domain list',
+};
 
 function Checker() {
   const [url, setUrl] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
 
   const check = async () => {
     if (!url) return;
     setLoading(true);
-    const res = await fetch(`${API}/predict`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
-    });
-    setResult(await res.json());
+    try {
+      const res = await fetch(`${API}/predict`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      setResult(await res.json());
+    } catch {
+      alert('Backend not reachable. Is uvicorn running on port 8000?');
+    }
     setLoading(false);
   };
 
@@ -55,49 +71,18 @@ function Checker() {
         <div className={`result ${result.verdict}`}>
           <h3>{result.verdict === 'phishing' ? '⚠ Phishing detected' : '✓ Legitimate'}</h3>
           <p>Confidence: {(result.confidence * 100).toFixed(1)}%</p>
-          <p>Resolved by: {result.stage_used === 'stage1_fast' ? 'Stage 1 (fast, ~6ms)' : 'Stage 2 (deep, ~34ms)'}</p>
+          <p>Resolved by: {STAGE_LABEL[result.stage_used] ?? result.stage_used}</p>
+          {(result.reasons ?? []).length > 0 && (
+            <div className="reasons">
+              <p>Why:</p>
+              <ul>
+                {(result.reasons ?? []).map((r, i) => <li key={i}>{r}</li>)}
+              </ul>
+            </div>
+          )}
           {result.verdict === 'phishing' && <button onClick={report}>Report this site</button>}
         </div>
       )}
-    </div>
-  );
-}
-
-function Dashboard() {
-  const [stats, setStats] = useState(null);
-
-  useEffect(() => {
-    fetch(`${API}/stats`).then((r) => r.json()).then(setStats);
-  }, []);
-
-  if (!stats) return <p>Loading...</p>;
-
-  return (
-    <div>
-      <div className="stat-row">
-        <div className="stat-box"><div className="num">{stats.total_scans}</div><div className="label">Total scans</div></div>
-        <div className="stat-box"><div className="num">{stats.phishing_blocked}</div><div className="label">Phishing blocked</div></div>
-      </div>
-
-      <div className="list-card">
-        <h3>Recent scans</h3>
-        {stats.recent.map((r, i) => (
-          <div className="list-item" key={i}>
-            <span>{r.url}</span>
-            <span className={`badge ${r.verdict}`}>{r.verdict}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="list-card">
-        <h3>Top reported domains</h3>
-        {stats.top_reported.length === 0 && <p style={{ color: '#a1a1aa', fontSize: 14 }}>No reports yet</p>}
-        {stats.top_reported.map((r, i) => (
-          <div className="list-item" key={i}>
-            <span>{r.domain}</span><span>{r.count} reports</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
