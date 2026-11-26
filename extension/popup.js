@@ -8,17 +8,7 @@ reportButton.addEventListener('click', submitReport);
 async function checkCurrentTab() {
   const loadingEl = document.getElementById('loading');
   const resultDiv = document.getElementById('result');
-<<<<<<< HEAD
   const statusEl = document.getElementById('status');
-=======
-  const reportBtn = document.getElementById('reportBtn');
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  if (!tab.url || !tab.url.startsWith('http')) {
-    loadingEl.textContent = 'This page type cannot be checked (not a regular website).';
-    return;
-  }
->>>>>>> origin/main
 
   try {
     const [tab] = await chrome.tabs.query({
@@ -54,82 +44,40 @@ async function checkCurrentTab() {
 
     loadingEl.style.display = 'none';
     resultDiv.style.display = 'block';
-<<<<<<< HEAD
     reportButton.style.display = 'block';
 
-    resultDiv.className =
-      data.verdict === 'phishing' ? 'risky' : 'safe';
+    const isPhishing = data.verdict === 'phishing';
+    resultDiv.className = isPhishing ? 'risky' : 'safe';
 
-    // Create the basic result
-    resultDiv.innerHTML = `
-      <b>${data.verdict.toUpperCase()}</b>
-      <br>
-      Confidence: ${(data.confidence * 100).toFixed(1)}%
-
-      <div class="reasons">
-        <strong>
-          ${data.verdict === 'phishing'
-            ? 'Why was this flagged?'
-            : 'Why was this considered safe?'}
-        </strong>
-
-        <ul id="reasonsList"></ul>
-      </div>
-    `;
-
-    // Display dynamic reasons from backend
-    const reasonsList = document.getElementById('reasonsList');
-
-    if (data.reasons && data.reasons.length > 0) {
-      data.reasons.forEach(reason => {
-        const li = document.createElement('li');
-        li.textContent = reason;
-        reasonsList.appendChild(li);
-      });
-    }
-
-=======
-    resultDiv.className = data.verdict === 'phishing' ? 'risky' : 'safe';
-
-    // verdict + confidence (built with textContent, so nothing from the server is run as HTML)
     resultDiv.textContent = '';
     const title = document.createElement('b');
-    title.textContent = data.verdict.toUpperCase();
+    title.textContent = String(data.verdict || '').toUpperCase();
     resultDiv.appendChild(title);
     resultDiv.appendChild(document.createElement('br'));
     resultDiv.appendChild(
       document.createTextNode(`Confidence: ${(data.confidence * 100).toFixed(1)}%`)
     );
 
-    // explanation: why the model decided this (top reasons from the backend)
     if (Array.isArray(data.reasons) && data.reasons.length > 0) {
-      const whyTitle = document.createElement('div');
-      whyTitle.className = 'why-title';
-      whyTitle.textContent = 'Why:';
-      const list = document.createElement('ul');
+      const reasonsWrap = document.createElement('div');
+      reasonsWrap.className = 'reasons';
+
+      const reasonsTitle = document.createElement('strong');
+      reasonsTitle.textContent = isPhishing
+        ? 'Why was this flagged?'
+        : 'Why was this considered safe?';
+      reasonsWrap.appendChild(reasonsTitle);
+
+      const reasonsList = document.createElement('ul');
+      reasonsList.id = 'reasonsList';
       data.reasons.forEach((reason) => {
         const li = document.createElement('li');
         li.textContent = reason;
-        list.appendChild(li);
+        reasonsList.appendChild(li);
       });
-      resultDiv.appendChild(whyTitle);
-      resultDiv.appendChild(list);
+      reasonsWrap.appendChild(reasonsList);
+      resultDiv.appendChild(reasonsWrap);
     }
-
-    if (data.verdict === 'phishing') {
-      reportBtn.style.display = 'inline-block';
-    }
-
-    reportBtn.addEventListener('click', async () => {
-      const domain = new URL(tab.url).hostname;
-      await fetch('http://127.0.0.1:8000/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain }),
-      });
-      document.getElementById('status').textContent = `Reported: ${domain}`;
-    });
->>>>>>> origin/main
   } catch (err) {
     loadingEl.textContent = err instanceof TypeError
       ? 'Backend not reachable. Is uvicorn running on port 8000?'

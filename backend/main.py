@@ -102,13 +102,13 @@ def explain(model, row_df, label, top_k=3):
 
 
 @app.post("/predict")
+
 def predict(req: URLRequest):
     ext = _tld_extractor(req.url)
     base_domain = f"{ext.domain}.{ext.suffix}"
     reasons = []
 
     if base_domain in ALLOWLIST_DOMAINS:
-<<<<<<< HEAD
         label = "legitimate"
         confidence = 0.99
         stage_used = "allowlist"
@@ -116,10 +116,7 @@ def predict(req: URLRequest):
         reasons = [
             "The domain is present in the trusted allowlist"
         ]
-=======
-        label, confidence, stage_used = "legitimate", 0.99, "allowlist"
-        reasons = ["Domain is on the trusted-domain list"]
->>>>>>> origin/main
+
     else:
         raw = extract_lexical_features(req.url)
 
@@ -139,32 +136,29 @@ def predict(req: URLRequest):
         )
 
         if confident:
-            verdict_proba, stage_used = proba1, "stage1_fast"
+            verdict_proba = proba1
+            stage_used = "stage1_fast"
         else:
             verdict_proba = stage2_model.predict_proba(lex_row)[0][1]
             stage_used = "stage2_deep"
 
         label = "phishing" if verdict_proba >= 0.5 else "legitimate"
-<<<<<<< HEAD
 
         confidence = float(
             verdict_proba if label == "phishing"
             else 1 - verdict_proba
         )
-=======
-        confidence = float(verdict_proba if label == "phishing" else 1 - verdict_proba)
+
         reasons = explain(stage1_model, lex_row, label)
 
-    conn.execute("INSERT INTO logs (url, verdict, confidence, stage_used, ts) VALUES (?,?,?,?,?)",
-                 (req.url, label, confidence, stage_used, datetime.utcnow().isoformat()))
+    # Save prediction in database
+    conn.execute(
+        "INSERT INTO logs (url, verdict, confidence, stage_used, ts) VALUES (?,?,?,?,?)",
+        (req.url, label, confidence, stage_used, datetime.utcnow().isoformat())
+    )
     conn.commit()
-    return {"url": req.url, "verdict": label, "confidence": round(confidence, 4),
-            "stage_used": stage_used, "reasons": reasons}
->>>>>>> origin/main
 
-        conn.execute("INSERT INTO logs (url, verdict, confidence, stage_used, ts) VALUES (?,?,?,?,?)",
-                    (req.url, label, confidence, stage_used, datetime.utcnow().isoformat()))
-        conn.commit()
+    # Return prediction result
     return {
         "url": req.url,
         "verdict": label,
