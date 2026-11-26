@@ -234,6 +234,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
+<<<<<<< HEAD
 .sidebar { background: #ffffff; }
 .brand-mark { color: #087f78; background: #e5f5f2; border-color: #c8e8e2; }
 .sidebar-label { color: #71818d; }
@@ -310,3 +311,23 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .dashboard-tip strong { color: #243d4b; }
 .dashboard-tip p { color: #58707d; }
 .dashboard-tip > svg:last-child { color: #526f7e; }
+=======
+.stat-row { display: flex; gap: 16px; margin-bottom: 24px; }
+.stat-box {
+  flex: 1; background: #1a1d29; border: 1px solid #2a2d3a; border-radius: 10px;
+  padding: 18px; text-align: center;
+}
+.stat-box .num { font-size: 28px; font-weight: 700; color: #3b82f6; }
+.stat-box .label { font-size: 13px; color: #a1a1aa; margin-top: 4px; }
+
+.list-card { background: #1a1d29; border: 1px solid #2a2d3a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.list-card h3 { font-size: 15px; margin-bottom: 12px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.5px; }
+.list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2d3a; font-size: 14px; }
+.list-item:last-child { border-bottom: none; }
+.badge { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.badge.legitimate { background: rgba(39,174,96,0.2); color: #4ade80; }
+.badge.phishing { background: rgba(192,57,43,0.2); color: #f87171; }
+.reasons { margin-top: 12px; }
+.reasons ul { margin: 6px 0 0 18px; color: #a1a1aa; font-size: 14px; }
+.reasons li { margin-top: 4px; }
+>>>>>>> origin/main

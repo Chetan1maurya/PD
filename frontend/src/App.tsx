@@ -123,10 +123,26 @@ export default function App() {
     </div>
   );
 }
+type Result = {
+  verdict: 'phishing' | 'legitimate';
+  confidence: number;
+  stage_used: string;
+  reasons?: string[];
+};
+
+const STAGE_LABEL: Record<string, string> = {
+  stage1_fast: 'Stage 1 (fast)',
+  stage2_deep: 'Stage 2 (deep)',
+  allowlist: 'Trusted-domain list',
+};
 
 function Checker() {
   const [url, setUrl] = useState('');
+<<<<<<< HEAD
   const [result, setResult] = useState<Prediction | null>(null);
+=======
+  const [result, setResult] = useState<Result | null>(null);
+>>>>>>> origin/main
   const [loading, setLoading] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
@@ -139,6 +155,7 @@ function Checker() {
     if (!trimmedUrl) return;
 
     setLoading(true);
+<<<<<<< HEAD
     setError('');
     setReportMessage('');
     setReported(false);
@@ -155,6 +172,18 @@ function Checker() {
     } finally {
       setLoading(false);
     }
+=======
+    try {
+      const res = await fetch(`${API}/predict`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      setResult(await res.json());
+    } catch {
+      alert('Backend not reachable. Is uvicorn running on port 8000?');
+    }
+    setLoading(false);
+>>>>>>> origin/main
   };
 
   const report = async () => {
@@ -200,11 +229,28 @@ function Checker() {
         <p className="hero-copy">Inspect suspicious URLs with layered machine-learning analysis before you click.</p>
       </section>
 
+<<<<<<< HEAD
       <section className="scanner-panel">
         <div className="panel-heading">
           <div className="panel-icon"><Icon name="scan" size={19} /></div>
           <div><h2>URL reputation check</h2><p>Enter a link to run a security scan</p></div>
           <div className="encrypted-label"><Icon name="lock" size={13} /> PRIVATE SCAN</div>
+=======
+      {result && (
+        <div className={`result ${result.verdict}`}>
+          <h3>{result.verdict === 'phishing' ? '⚠ Phishing detected' : '✓ Legitimate'}</h3>
+          <p>Confidence: {(result.confidence * 100).toFixed(1)}%</p>
+          <p>Resolved by: {STAGE_LABEL[result.stage_used] ?? result.stage_used}</p>
+          {(result.reasons ?? []).length > 0 && (
+            <div className="reasons">
+              <p>Why:</p>
+              <ul>
+                {(result.reasons ?? []).map((r, i) => <li key={i}>{r}</li>)}
+              </ul>
+            </div>
+          )}
+          {result.verdict === 'phishing' && <button onClick={report}>Report this site</button>}
+>>>>>>> origin/main
         </div>
         <form className="scanner-form" onSubmit={check}>
           <div className="url-input-wrap">
@@ -274,6 +320,7 @@ function Checker() {
       </section>
     </>
   );
+<<<<<<< HEAD
 }
 
 function Dashboard() {
@@ -378,3 +425,6 @@ function formatTimestamp(value: string) {
   if (Number.isNaN(date.getTime())) return 'Time unavailable';
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
+=======
+}
+>>>>>>> origin/main
